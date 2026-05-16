@@ -1,0 +1,15 @@
+[package]
+name = "markdown-strip"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.74"
+description = "Strip Markdown formatting (headers, bold, italic, links, code, blockquotes) to plain text. Conservative, fast, zero deps."
+authors = ["Mukunda Rao Katta <mukunda.vjcs6@gmail.com>"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/MukundaKatta/markdown-strip"
+homepage = "https://github.com/MukundaKatta/markdown-strip"
+documentation = "https://docs.rs/markdown-strip"
+readme = "README.md"
+keywords = ["markdown", "strip", "plain-text", "llm", "sanitize"]
+categories = ["text-processing"]
+exclude = [".github/*", "target/*"]
