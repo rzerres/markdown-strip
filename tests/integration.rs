@@ -14,7 +14,10 @@ fn strips_bold_italic() {
 
 #[test]
 fn strips_inline_code() {
-    assert_eq!(strip_markdown("use `cargo build` to build"), "use cargo build to build");
+    assert_eq!(
+        strip_markdown("use `cargo build` to build"),
+        "use cargo build to build"
+    );
 }
 
 #[test]
@@ -67,6 +70,21 @@ fn does_not_strip_underscores_in_words() {
         strip_markdown("the variable snake_case_name is set"),
         "the variable snake_case_name is set"
     );
+}
+
+#[test]
+fn preserves_non_ascii_text() {
+    // Multi-byte UTF-8 characters that fall through to the default copy
+    // path must be preserved intact, not mangled byte-by-byte.
+    assert_eq!(strip_markdown("café résumé naïve"), "café résumé naïve");
+    assert_eq!(strip_markdown("hello 🦀 world"), "hello 🦀 world");
+    assert_eq!(strip_markdown("## 你好\n\n世界"), "你好\n\n世界");
+}
+
+#[test]
+fn strips_formatting_around_non_ascii() {
+    assert_eq!(strip_markdown("**café** and *résumé*"), "café and résumé");
+    assert_eq!(strip_markdown("[café](https://x) é"), "café é");
 }
 
 #[test]

@@ -45,10 +45,8 @@ pub fn strip_markdown(s: &str) -> String {
     }
 
     // Trim the final pushed newline if input didn't end with one.
-    if !s.ends_with('\n') {
-        if out.ends_with('\n') {
-            out.pop();
-        }
+    if !s.ends_with('\n') && out.ends_with('\n') {
+        out.pop();
     }
     out
 }
@@ -105,7 +103,11 @@ fn strip_list_marker(s: &str) -> String {
     let leading_ws: String = s.chars().take_while(|c| c.is_whitespace()).collect();
     let rest = &s[leading_ws.len()..];
     // Unordered: -, *, +
-    if let Some(stripped) = rest.strip_prefix("- ").or(rest.strip_prefix("* ")).or(rest.strip_prefix("+ ")) {
+    if let Some(stripped) = rest
+        .strip_prefix("- ")
+        .or(rest.strip_prefix("* "))
+        .or(rest.strip_prefix("+ "))
+    {
         return format!("{leading_ws}{stripped}");
     }
     // Ordered: N. or N) where N is digits
@@ -186,9 +188,13 @@ fn strip_inline(s: &str) -> String {
                 continue;
             }
         }
-        // Default: copy one byte (safe because we only branched on ASCII).
-        out.push(bytes[i] as char);
-        i += 1;
+        // Default: copy one whole UTF-8 character. `i` is always on a char
+        // boundary here (every branch above advances by ASCII-aligned byte
+        // counts), so we copy the full multi-byte sequence rather than
+        // mangling it one byte at a time.
+        let ch_len = utf8_char_len(bytes[i]);
+        out.push_str(&s[i..i + ch_len]);
+        i += ch_len;
     }
     out
 }
@@ -204,6 +210,23 @@ fn parse_link(s: &str) -> Option<(String, usize)> {
     let close_url = s[after_url_off..].find(')')?;
     let text = s[1..1 + close_text].to_string();
     Some((text, after_url_off + close_url + 1))
+}
+
+/// Length in bytes of the UTF-8 character that starts with the leading
+/// byte `b`. Returns 1 for ASCII and continuation/invalid bytes so the
+/// caller always makes forward progress and stays on char boundaries.
+fn utf8_char_len(b: u8) -> usize {
+    if b < 0x80 {
+        1
+    } else if b >> 5 == 0b110 {
+        2
+    } else if b >> 4 == 0b1110 {
+        3
+    } else if b >> 3 == 0b11110 {
+        4
+    } else {
+        1
+    }
 }
 
 fn is_word_boundary(bytes: &[u8], i: usize) -> bool {
