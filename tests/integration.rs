@@ -88,6 +88,19 @@ fn strips_formatting_around_non_ascii() {
 }
 
 #[test]
+fn strips_inline_markup_inside_emphasis() {
+    // Markup nested inside bold/italic must also be stripped, not left raw.
+    assert_eq!(strip_markdown("**[text](https://x)**"), "text");
+    assert_eq!(strip_markdown("*[text](https://x)*"), "text");
+    assert_eq!(strip_markdown("__[text](https://x)__"), "text");
+    assert_eq!(strip_markdown("_[text](https://x)_"), "text");
+    assert_eq!(strip_markdown("**`code`**"), "code");
+    assert_eq!(strip_markdown("**![alt](https://x)**"), "alt");
+    // Nested emphasis inside emphasis.
+    assert_eq!(strip_markdown("**a *b* c**"), "a b c");
+}
+
+#[test]
 fn complex_paragraph() {
     let md = "## Hello\n\n**bold** and *italic* with `code` and [a link](https://x).";
     assert_eq!(

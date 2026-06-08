@@ -160,30 +160,33 @@ fn strip_inline(s: &str) -> String {
         }
         // Bold **x** or __x__ → x. Italic *x* or _x_ → x. We handle the
         // bold case first so we don't strip half a bold pair as italic.
+        // The emphasized span may itself contain inline markup (e.g. a link
+        // inside bold: `**[t](u)**`), so recurse into it rather than copying
+        // it verbatim.
         if i + 1 < bytes.len() && (bytes[i] == b'*' && bytes[i + 1] == b'*') {
             if let Some(end_rel) = s[i + 2..].find("**") {
-                out.push_str(&s[i + 2..i + 2 + end_rel]);
+                out.push_str(&strip_inline(&s[i + 2..i + 2 + end_rel]));
                 i += 4 + end_rel;
                 continue;
             }
         }
         if i + 1 < bytes.len() && (bytes[i] == b'_' && bytes[i + 1] == b'_') {
             if let Some(end_rel) = s[i + 2..].find("__") {
-                out.push_str(&s[i + 2..i + 2 + end_rel]);
+                out.push_str(&strip_inline(&s[i + 2..i + 2 + end_rel]));
                 i += 4 + end_rel;
                 continue;
             }
         }
         if bytes[i] == b'*' {
             if let Some(end_rel) = s[i + 1..].find('*') {
-                out.push_str(&s[i + 1..i + 1 + end_rel]);
+                out.push_str(&strip_inline(&s[i + 1..i + 1 + end_rel]));
                 i += 2 + end_rel;
                 continue;
             }
         }
         if bytes[i] == b'_' && is_word_boundary(bytes, i) {
             if let Some(end_rel) = s[i + 1..].find('_') {
-                out.push_str(&s[i + 1..i + 1 + end_rel]);
+                out.push_str(&strip_inline(&s[i + 1..i + 1 + end_rel]));
                 i += 2 + end_rel;
                 continue;
             }
