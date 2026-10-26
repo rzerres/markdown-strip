@@ -26,5 +26,11 @@ name = "md2txt"
 path = "src/bin/md2txt.rs"
 required-features = ["cli"]
 
+# CLI tests spawn the binary, so they only build when the binary does.
+[[test]]
+name = "cli"
+path = "tests/cli.rs"
+required-features = ["cli"]
+
 [dependencies]
 clap = { version = "4", features = ["derive"], optional = true }
