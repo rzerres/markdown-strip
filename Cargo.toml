@@ -1,6 +1,6 @@
 [package]
 name = "markdown-strip"
-version = "0.1.1"
+version = "0.2.0"
 edition = "2021"
 rust-version = "1.85"  # MSRV
 description = "Strip Markdown formatting (headers, bold, italic, links, code, blockquotes) to plain text. Conservative, fast, zero deps."
